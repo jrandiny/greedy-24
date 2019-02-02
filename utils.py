@@ -19,7 +19,7 @@ def countScore(expressionStr):
 def pick4card(deck):
     cards = []
     for _ in range(4):
-        index = random.randint(0,len(deck))
+        index = random.randint(0,len(deck)-1)
         newDeck = deck[0:index]
         cards.append(deck[index:index+1][0])
         newDeck = newDeck + deck[index+1:len(deck)]
@@ -28,11 +28,13 @@ def pick4card(deck):
     return [cards,deck]
 
 
-
-
-
-
-
-
 def getNewDeck():
     return [1,2,3,4,5,6,7,8,9,10,11,12,13]*4
+
+if __name__ == '__main__':
+    deck = getNewDeck()
+
+    while(len(deck)>0):
+        out = pick4card(deck)
+        deck = out[1]
+        print(out[0])
