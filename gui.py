@@ -1,31 +1,30 @@
 import pygame
 import time
 import os, sys, math, pygame, pygame.font, pygame.image
-from pygame.locals import *
+from pygame.locals import Rect
 import utils
 import random
 import greedy1
 import animate
 
-#insialisasi pywindow
-pygame.font.init()
-(width, height) = (800, 600)
-screen = pygame.display.set_mode((width, height))
-pygame.display.flip()
-pygame.display.set_caption("24 gamee")
-
 #load background image
 jokerImg = pygame.image.load('assets/joker1.png')
 jackImg = pygame.image.load('assets/kartu.png')
 
+#global var
+lastDeck = []
+lastDeckSym = []
+repickShape = True
+
+cardHover = False
 
 #warna
 red = (200,0,0)
 gray = (128,128,128)
 white = (255,255,255)
 silver= (192,192,192)
-navy =[0,0,128]
-black =[0,0,0]
+navy =(0,0,128)
+black =(0,0,0)
 
 
 #text welcome 
@@ -38,7 +37,7 @@ class textWavey:
         self.offset = 0.0
         
     def animate(self):
-        s = pygame.Surface(self.size)
+        s= pygame.Surface(self.size)
         s.set_colorkey((0,0,0))
         height = self.size[1]
         self.offset += 0.5
@@ -48,8 +47,6 @@ class textWavey:
             s.blit(self.base, dst, src)
         return s
 
-
-
 def text_objects(text, font):
     textSurface = font.render(text, True, black)
     return textSurface, textSurface.get_rect()
@@ -57,12 +54,17 @@ def text_objects(text, font):
 #layar satu
 def joker(x,y):
     screen.blit(jokerImg, (x,y))
-    pygame.display.flip()
 
 #layar dua
 def jack(x,y,a,b):
+    global cardHover
+
     screen.blit(jackImg, (x,y))  
-    cardI = pygame.image.load('assets/back1.png').convert()
+    if cardHover:
+        cardI = pygame.image.load('assets/back2.png').convert()
+    else:
+        cardI = pygame.image.load('assets/back1.png').convert()
+        
     eks = pygame.image.load('assets/eks.png')
     score =pygame.image.load('assets/nilai.png')
     poinI = pygame.image.load('assets/poin.png')
@@ -70,14 +72,13 @@ def jack(x,y,a,b):
     screen.blit(eks,(150,550))
     screen.blit(score,(100,50))
     screen.blit(poinI,(450,50))
-    pygame.display.flip() 
 
 #ending
 def ending(x,y):
     endI = animate.GIFImage("assets/end.gif")
     while 1:
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == pygame.QUIT:
                 pygame.quit()
                 return
 
@@ -86,13 +87,10 @@ def ending(x,y):
         pygame.display.flip()
 
 #untuk kartu
-def card (x,nilai):
-    shape = ['S','H','D','C']
-    s = random.choice(shape)
+def card (x,y,nilai,s):
     nilai=str(nilai)
     cardImg =pygame.image.load('assets/'+s+nilai+'.gif')
-    screen.blit(cardImg, (x,400))
-    pygame.display.flip()
+    screen.blit(cardImg, (x,y))
 
 #untuk kalimat
 def message_display(text,x,y):
@@ -100,11 +98,6 @@ def message_display(text,x,y):
     TextSurf, TextRect = text_objects(text,a)
     TextRect.center =(x,y)
     screen.blit(TextSurf, TextRect)
-    pygame.display.flip()
-
-#def score (text):
-    
-
 
 #start button atau button lain 
 def button(msg,x,y,w,h,ic,ac,action=None):
@@ -125,16 +118,16 @@ def button(msg,x,y,w,h,ic,ac,action=None):
 
 #untuk ambil kartu
 def pick_Card(deck,total):
+    global lastDeck
+
     if len(deck)>0:
             out = utils.pick4card(deck)
             poin ,ekspresi= greedy1.calculate(out[0])
-           
+
             total+=poin
-            deck = out[1]
-            x= 100
-            for i in range(4):
-                card(x,out[0][i])
-                x+=200
+
+            lastDeck = out[0]
+            
             print(out[0])
             return [False,out[1],total,ekspresi]
                 
@@ -144,7 +137,7 @@ def pick_Card(deck,total):
 
 def game_intro():
     bigfont = pygame.font.SysFont(None, 60)
-    renderer = textWavey(bigfont, entry_info, white, 14)
+    renderer = textWavey(bigfont, 'Welcome..', white, 14)
     text = renderer.animate()
     intro = True
     
@@ -152,7 +145,6 @@ def game_intro():
         pygame.time.delay(40)    
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
                 quit()
         x = (width*0.001)
         y = (height*0.001)
@@ -162,53 +154,92 @@ def game_intro():
         button('Start',350,480,100,50,gray,silver,game_loop)
         pygame.display.flip()
 
+def animateSys(prog):
+    global lastDeckSym
+    global repickShape
+    global lastDeck
+
+    targetPosX = [-300,-100,100,300]
+    targetPosY = 200
+
+    originPosX = 350
+    originPosY = 200
+
+    if(repickShape):
+        lastDeckSym = ['S','H','D','C']
+        for i in range(1,4):
+            shape = ['S','H','D','C']
+            s = random.choice(shape)
+            lastDeckSym[i] = s
+        repickShape = False
+
+    for i in range(1,5):
+        x = originPosX + (targetPosX[i-1]) * (prog/100.0)
+        y = originPosY + (targetPosY) * (prog/100.0)
+        card(x,y,lastDeck[i-1],lastDeckSym[i-1])
 
 def game_loop():
+    global repickShape
+    global cardHover
+
+    ekspresi = ""
+    poin = 0
+
+
     x = (width*0.001)
     y = (height*0.001)
     a = 350 # x coordinate of card
     b = 200 # y coordinate of card
-   
     jack(x,y,a,b)
-   
-    cardI = pygame.image.load('assets/back1.png').convert()
-    screen.blit(cardI,(a,b))
+
     pygame.display.flip()   
 
     deck = utils.getNewDeck()
 
     gameExit = False
     poin = 0
-    while not gameExit:       
+    prog = -99
+    while not gameExit:  
+        jack(x,y,a,b) 
+        if(prog!=-99):
+            if(prog<100):
+                prog+=1
+            else:
+                poin_s=utils.countScore(ekspresi)
+                message_display(ekspresi,400,575)
+                message_display(str(poin_s),500,70)
+                message_display(str(poin),150,70) 
+            animateSys(prog)
+
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+            if event.type == QUIT:
                 quit()
+
             mouse = pygame.mouse.get_pos()
             click = pygame.mouse.get_pressed()
+            
             if a+50 > mouse[0] > a and b+80 > mouse[1] > b:
-                cardI = pygame.image.load('assets/back2.png').convert()
-                screen.blit(cardI,(a,b))
-                pygame.display.flip()  
+                cardHover = True
+                
                 if click[0]==1 :
                     #print('clicked on image')
                     gameExit,deck,poin,ekspresi=pick_Card(deck,poin)
-                    if(not gameExit):''
-                        poin_s=utils.countScore(ekspresi)
-                        message_display(ekspresi,400,575)
-                        message_display(str(poin_s),500,70)
-                        #print("poin : %d" % poin)
-                        message_display(str(poin),150,70) 
-                        pygame.time.delay(1000)        
-                
-            jack(x,y,a,b)            
+                    repickShape = True
+                    prog = 0
+
+            else:
+                cardHover = False
+            
+
+        pygame.display.flip()           
     if gameExit:
         ending(800,600)
-       
-
-       
-
-entry_info = 'Welcome..'
 
 if __name__ == '__main__':
+    #insialisasi pywindow
+    pygame.font.init()
+    (width, height) = (800, 600)
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.flip()
+    pygame.display.set_caption("24 game")
     game_intro()
