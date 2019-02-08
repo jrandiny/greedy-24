@@ -166,7 +166,3 @@ class GIFImage(object):
 		new.ptime = self.ptime
 		new.reversed = self.reversed
 		return new
-
-
-	
-
