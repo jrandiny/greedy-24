@@ -2,7 +2,7 @@ import random
 
 def countScore(expressionStr):
     try:
-        skor = (-1)*abs(24 - (eval(expressionStr)))
+        skor = (-10)*abs(24 - (eval(expressionStr)))
         for i in range (len(expressionStr)):
             if (expressionStr[i]=='+'):
                 skor = skor + 5
@@ -12,9 +12,11 @@ def countScore(expressionStr):
                 skor = skor + 3
             if (expressionStr[i]=='/'):
                 skor = skor + 2
+            if (expressionStr[i]=='(' or expressionStr[i] == ')'):
+                skor = skor - 0.5
         return skor
     except:
-        return 0
+        return -999
 
 def pick4card(deck):
     cards = []
