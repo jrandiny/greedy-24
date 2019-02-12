@@ -55,7 +55,7 @@ def calculate(param):
 
         if(i==3):
             tempMax = maxExpr.copy()
-            for enclosing in [1,2,3,4]:
+            for enclosing in [1,2,3]:
                 tempExpr = maxExpr.copy()
                 if(enclosing==1):
                     tempExpr = ['((']+tempExpr.copy()
@@ -70,9 +70,6 @@ def calculate(param):
                     tempExpr.insert(2,'((')
                     tempExpr.insert(6,')')
                     tempExpr = tempExpr.copy() + [')']
-                elif(enclosing ==4):
-                    tempExpr.insert(2,'(')
-                    tempExpr.insert(6,')')
 
                 if(utils.countScore(toText(tempExpr))>=utils.countScore(toText(tempMax))):
                     tempMax = tempExpr.copy()
