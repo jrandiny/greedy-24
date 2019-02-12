@@ -1,5 +1,5 @@
 import utils
-import processor.greedy1 as processor
+import processor.greedy5 as processor
 import sys
 
 if (len(sys.argv)==3):
