@@ -2,10 +2,12 @@ import processor.greedy1 as greedy1
 import processor.greedy2 as greedy2
 import processor.brute as brute
 import processor.greedy3 as greedy3
+import processor.greedy4 as greedy4
+import processor.greedy5 as greedy5
 import itertools
 import sys
 
-candidates = [brute,greedy1,greedy3]
+candidates = [brute,greedy5]
 
 def getAllPermut():
     return list(itertools.combinations_with_replacement([1,2,3,4,5,6,7,8,9,10,11,12,13],4))
