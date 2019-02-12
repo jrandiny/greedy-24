@@ -157,8 +157,8 @@ class mainScreen(screen):
 
         poin_s=utils.countScore(self.ekspresi)
         message_display(self.ekspresi,400,575)
-        message_display(str(poin_s),500,70)
-        message_display(str(self.poin),150,70) 
+        message_display(str(round(poin_s,2)),500,70)
+        message_display(str(round(self.poin,2)),150,70) 
 
         if(self.prog!=-99):
             if(self.prog<100):
