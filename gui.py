@@ -5,7 +5,7 @@ from pygame.locals import Rect
 import utils
 import random
 import greedy1
-import animate
+#import animate
 import abc
 
 #load background image
@@ -20,12 +20,14 @@ repickShape = True
 state = 1
 
 #warna
-red = (200,0,0)
+
 gray = (128,128,128)
 white = (255,255,255)
 silver= (192,192,192)
 navy =(0,0,128)
 black =(0,0,0)
+cyan=(0,255,255)
+aqua =(127,255,212)
 
 
 #text welcome 
@@ -68,6 +70,7 @@ class introScreen(screen):
         jokerImg = pygame.image.load('assets/joker1.png')
         screen.blit(jokerImg, (x,y))
         text = self.renderer.animate()
+        
         screen.blit(text, (300, 400))
         button('Start',350,480,100,50,gray,silver,self.switchToMain)
 
@@ -91,6 +94,11 @@ class mainScreen(screen):
         self.cardIBack1 = pygame.image.load('assets/back1.png').convert()
         self.cardIBack2 = pygame.image.load('assets/back2.png').convert()
 
+        self.endI = pygame.image.load("assets/end.gif")
+
+    def switchToEnd(self):
+        global state
+        state = 3
 
     def updateParam(self,deck,poin, ekspresi):
         self.poin = poin
@@ -105,19 +113,29 @@ class mainScreen(screen):
 
         originPosX = 350
         originPosY = 200
+        if (len(self.lastDeck)>0):
+            if(self.repickShape):
+                self.lastDeckSym = ['S','H','D','C']
+                for i in range(1,4):
+                    shape = ['S','H','D','C']
+                    s = random.choice(shape)
+                    self.lastDeckSym[i] = s
+                self.repickShape = False
+        
+            for i in range(1,5):
+                x = originPosX + (targetPosX[i-1]) * (prog/100.0)
+                y = originPosY + (targetPosY) * (prog/100.0)
+                card(x,y,self.lastDeck[i-1],self.lastDeckSym[i-1])
+        else:
+            x = (width*0.001)
+            y = (height*0.001)
+            screen.blit(jackImg, (x,y))
+            button('Reshuffle',350,300,100,50,cyan,aqua,game_loop)
+            button('Exit ?',350,500,100,50,cyan,aqua,self.switchToEnd)
+            
 
-        if(self.repickShape):
-            self.lastDeckSym = ['S','H','D','C']
-            for i in range(1,4):
-                shape = ['S','H','D','C']
-                s = random.choice(shape)
-                self.lastDeckSym[i] = s
-            self.repickShape = False
 
-        for i in range(1,5):
-            x = originPosX + (targetPosX[i-1]) * (prog/100.0)
-            y = originPosY + (targetPosY) * (prog/100.0)
-            card(x,y,self.lastDeck[i-1],self.lastDeckSym[i-1])
+            
 
 
     def loop(self):
@@ -147,6 +165,8 @@ class mainScreen(screen):
                 self.prog+=1
                 
             self.animateSys(self.prog)
+       
+            
 
     def eventLoop(self):
         mouse = pygame.mouse.get_pos()
@@ -163,11 +183,21 @@ class mainScreen(screen):
 
 class endingScreen(screen):
     def __init__(self):
-        self.endI = animate.GIFImage("assets/end.gif")
-    
+        self.endI = pygame.image.load("assets/end.gif")
+
+    def switchToM(self):
+        global state
+        state = 2
+
     def loop(self):
-        screen.fill((255,255,255))
-        self.endI.render(screen, (0, 0))
+        x = (width*0.001)
+        y = (height*0.001)
+        screen.blit(self.endI, (x,y))       
+        button('Bye',150,330,100,50,navy,cyan,quit)
+        button('Play again',450,330,100,50,navy,cyan,self.switchToM)
+        
+    
+        
 
 def text_objects(text, font):
     textSurface = font.render(text, True, black)
@@ -223,11 +253,12 @@ def pick_Card(deck,total):
 
 def game_loop():
     global state
-
+    
     deck = utils.getNewDeck()
 
     intro = introScreen()
     main = mainScreen(deck)
+    end = endingScreen()
     
     while 1:  
         if(state == 1):
@@ -235,14 +266,20 @@ def game_loop():
         elif(state == 2):
             main.loop()
         elif(state == 3):
-            pass
+            end.loop()
+           
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
-            
             if(state == 2):
                 main.eventLoop()
+            
+           
+            
+            
+                
+                
             
         pygame.display.flip()           
 
@@ -254,3 +291,4 @@ if __name__ == '__main__':
     pygame.display.flip()
     pygame.display.set_caption("24 game")
     game_loop()
+    
