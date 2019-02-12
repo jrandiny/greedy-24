@@ -88,7 +88,7 @@ class mainScreen(screen):
         self.cardY = 200
 
         self.eks = pygame.image.load('assets/eks.png')
-        self.score =pygame.image.load('assets/nilai.png')
+        self.score =pygame.image.load('assets/score.png')
         self.poinI = pygame.image.load('assets/poin.png')
 
         self.cardIBack1 = pygame.image.load('assets/back1.png').convert()
@@ -158,7 +158,7 @@ class mainScreen(screen):
         poin_s=utils.countScore(self.ekspresi)
         message_display(self.ekspresi,400,575)
         message_display(str(round(poin_s,2)),500,70)
-        message_display(str(round(self.poin,2)),150,70) 
+        message_display(str(round(self.poin,2)),150,65) 
 
         if(self.prog!=-99):
             if(self.prog<100):
