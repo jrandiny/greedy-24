@@ -4,23 +4,19 @@ import os, sys, math, pygame, pygame.font, pygame.image
 from pygame.locals import Rect
 import utils
 import random
-import greedy1
-#import animate
+import processor.greedy5 as processor
 import abc
 
-#load background image
-
-jackImg = pygame.image.load('assets/kartu.png')
+'''Image credit
+Intro screen - https://pbs.twimg.com/media/DlE5j74XsAANQDX.jpg
+Main Screen - http://goldwakepress.org/data/Gaming-Tutorial-Blackjack-Casino-Game-Tutorial.jpg
+End Screen - 
+'''
 
 #global var
-lastDeck = []
-lastDeckSym = []
-repickShape = True
-
 state = 1
 
 #warna
-
 gray = (128,128,128)
 white = (255,255,255)
 silver= (192,192,192)
@@ -28,7 +24,6 @@ navy =(0,0,128)
 black =(0,0,0)
 cyan=(0,255,255)
 aqua =(127,255,212)
-
 
 #text welcome 
 class textWavey:
@@ -54,6 +49,10 @@ class screen(abc.ABC):
     @abc.abstractmethod
     def loop(self):
         pass
+    
+    @abc.abstractmethod
+    def eventLoop(self):
+        pass
 
 class introScreen(screen):
     def __init__(self):
@@ -73,6 +72,9 @@ class introScreen(screen):
         
         screen.blit(text, (300, 400))
         button('Start',350,480,100,50,gray,silver,self.switchToMain)
+    
+    def eventLoop(self):
+        pass
 
 class mainScreen(screen):
     def __init__(self,deck):
@@ -93,6 +95,7 @@ class mainScreen(screen):
 
         self.cardIBack1 = pygame.image.load('assets/back1.png').convert()
         self.cardIBack2 = pygame.image.load('assets/back2.png').convert()
+        self.jackImg = pygame.image.load('assets/kartu.png')
 
         self.endI = pygame.image.load("assets/end.gif")
 
@@ -106,6 +109,20 @@ class mainScreen(screen):
         self.lastDeck = deck
         self.repickShape = True
         self.prog = 0
+    
+    #untuk ambil kartu
+    def pick_Card(self,deck,total):
+        if len(deck)>0:
+            out = utils.pick4card(deck)
+            poin,ekspresi= processor.calculate(out[0])
+
+            total+=poin
+            
+            print(out[0])
+            return [False,out[1],total,ekspresi]
+                
+        else:
+            return [True,[],total,None]
 
     def animateSys(self,prog):
         targetPosX = [-300,-100,100,300]
@@ -129,22 +146,17 @@ class mainScreen(screen):
         else:
             x = (width*0.001)
             y = (height*0.001)
-            screen.blit(jackImg, (x,y))
+            screen.blit(self.jackImg, (x,y))
             button('Reshuffle',350,300,100,50,cyan,aqua,game_loop)
             button('Exit ?',350,500,100,50,cyan,aqua,self.switchToEnd)
             
-
-
-            
-
-
     def loop(self):
         x = (width*0.001)
         y = (height*0.001)
         cardX = 350 # x coordinate of card
         cardY = 200 # y coordinate of card
 
-        screen.blit(jackImg, (x,y))  
+        screen.blit(self.jackImg, (x,y))  
         if self.cardHover:
             cardI = self.cardIBack2
         else:
@@ -165,8 +177,6 @@ class mainScreen(screen):
                 self.prog+=1
                 
             self.animateSys(self.prog)
-       
-            
 
     def eventLoop(self):
         mouse = pygame.mouse.get_pos()
@@ -176,7 +186,7 @@ class mainScreen(screen):
             self.cardHover = True
             
             if click[0]==1 :
-                _,deck,poin,ekspresi=pick_Card(self.lastDeck,self.poin)
+                _,deck,poin,ekspresi=self.pick_Card(self.lastDeck,self.poin)
                 self.updateParam(deck,poin,ekspresi)
         else:
             self.cardHover = False
@@ -193,11 +203,11 @@ class endingScreen(screen):
         x = (width*0.001)
         y = (height*0.001)
         screen.blit(self.endI, (x,y))       
-        button('Bye',150,330,100,50,navy,cyan,quit)
-        button('Play again',450,330,100,50,navy,cyan,self.switchToM)
-        
+        button('Bye',150,330,100,50,white,cyan,quit)
+        button('Play again',450,330,100,50,white,cyan,self.switchToM)
     
-        
+    def eventLoop(self):
+        pass
 
 def text_objects(text, font):
     textSurface = font.render(text, True, black)
@@ -233,24 +243,6 @@ def button(msg,x,y,w,h,ic,ac,action=None):
     textRect.center = ( (x+(w/2)), (y+(h/2)) )
     screen.blit(textSurf, textRect)
 
-#untuk ambil kartu
-def pick_Card(deck,total):
-    global lastDeck
-
-    if len(deck)>0:
-        out = utils.pick4card(deck)
-        poin ,ekspresi= greedy1.calculate(out[0])
-
-        total+=poin
-
-        lastDeck = out[0]
-        
-        print(out[0])
-        return [False,out[1],total,ekspresi]
-            
-    else:
-        return [True,[],total,None]
-
 def game_loop():
     global state
     
@@ -259,27 +251,16 @@ def game_loop():
     intro = introScreen()
     main = mainScreen(deck)
     end = endingScreen()
+
+    screenObj = [intro, main, end]
     
     while 1:  
-        if(state == 1):
-            intro.loop()
-        elif(state == 2):
-            main.loop()
-        elif(state == 3):
-            end.loop()
-           
+        screenObj[state-1].loop()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
-            if(state == 2):
-                main.eventLoop()
-            
-           
-            
-            
-                
-                
+            screenObj[state-1].eventLoop()
             
         pygame.display.flip()           
 
