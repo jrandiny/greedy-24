@@ -10,7 +10,8 @@ import abc
 '''Image credit
 Intro screen - https://pbs.twimg.com/media/DlE5j74XsAANQDX.jpg
 Main Screen - http://goldwakepress.org/data/Gaming-Tutorial-Blackjack-Casino-Game-Tutorial.jpg
-End Screen - 
+End Screen - (https://gifer.com/en/9qR4)
+Card image - https://www.daniweb.com/attachments/0/Cards_gif.zip
 '''
 
 #global var
